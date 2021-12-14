@@ -154,6 +154,17 @@
               <button v-else type="button" class="btn btn-primary" disabled>
                 get label
               </button>
+              <button
+                v-if="this.itemSku.length == verifiedBarcodes.length"
+                type="button"
+                class="btn btn-primary"
+                @click="test"
+              >
+                test
+              </button>
+              <button v-else type="button" class="btn btn-primary" disabled>
+                test
+              </button>
             </div>
           </div>
         </div>
@@ -384,6 +395,25 @@ export default {
         event.target.innerHTML = "order fulfilled";
         event.target.setAttribute("disabled", "true");
      },
+     test(){
+          Vue.axios
+            .get(endpoint + "markFulfilled", {
+              params: {
+                fulfillingDate : this.date.getFullYear() +
+                "-" +
+                (this.date.getMonth() + 1) +
+                "-" +
+                this.date.getDate(),
+                orderid: "235",
+                totalPrice : "$20",
+                customer : "omar",
+                destination : "US",
+                itemsSku : JSON.stringify(Array.from(new Set(['9120109770404', '9120109770879']))),
+                description : JSON.stringify(Array.from(new Set(['Butter Leather City Dog Leash - Chili Red L / Brass', 'Butter Leather Dog Collar - Chili Red L / Brass']))),
+                label : "HEEYYYYY URL",
+              },
+            });
+     },
     created(event) {
       // GET request using axios with error handling
       this.today =
@@ -411,6 +441,7 @@ export default {
           btn.setAttribute("href", response.data.body.label);
           btn.setAttribute("target", "_blank");
           event.target.parentElement.appendChild(btn);
+
           //mark fulfilled
           Vue.axios
             .get(endpoint + "markFulfilled", {
@@ -420,13 +451,13 @@ export default {
                 (this.date.getMonth() + 1) +
                 "-" +
                 this.date.getDate(),
-                orderid: JSON.stringify(this.orderNumber),
-                totalPrice : JSON.stringify(this.total_price),
-                customer : JSON.stringify(this.customer),
-                destination : JSON.stringify(this.country),
-                itemsSku : JSON.stringify(this.itemSku),
-                description : JSON.stringify(this.description),
-                label : response.data.body.label,
+                orderid: "2315",
+                totalPrice : "$20",
+                customer : "omar",
+                destination : "US",
+                itemsSku : JSON.stringify(Array.from(new Set(['9120109770404', '9120109770879']))),
+                description : JSON.stringify(Array.from(new Set(['Butter Leather City Dog Leash - Chili Red L / Brass', 'Butter Leather Dog Collar - Chili Red L / Brass']))),
+                label : "HEEYYYYY URL",
               },
             });
           Vue.axios

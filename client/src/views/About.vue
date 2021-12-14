@@ -14,9 +14,11 @@
         Refresh
       </button>
     </div>
+    <div class="orders-counr">number of orders here :{{outOfStock.length}}</div>
     <table class="table table-light">
       <thead>
         <tr>
+          
           <th scope="col">#ID</th>
           <th scope="col">Total Price</th>
           <th scope="col">Customer</th>

@@ -12,6 +12,7 @@ var db = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
   password : '',
+  database : 'fulfillment_app'
 });
 
 db.connect((err) => {
@@ -20,7 +21,7 @@ db.connect((err) => {
   }
   console.log("database connected")
 });
-
+/*
 //create DB
 app.get('/createdb', (req, res) => {
   let sql = "CREATE DATABASE inventory";
@@ -44,36 +45,46 @@ app.get("/createorderstable", (req, res) =>{
     res.send("orders table created");
   });
 });
+*/
 
-//insert data
-app.get("/addorder", (req, res) => {
-  let order = {
-    title : "order one",
-    body: "test"
-  };
-  let sql = "INSERT INTO orders SET ?";
-  let query = db.query(sql, order, (err, result) =>{
-    if(err) {
-      throw err;
-    }
-    console.log(result);
-    res.send("order added");
-  });
-});
 
 //select data
-app.get("/getorders", (req, res) => {
-
-  let sql = "SELECT * FROM orders";
+app.get("/getinventory", (req, res) => {
+  let sql = `SELECT Barcode, Quantity FROM all_products`;
   let query = db.query(sql, (err, result) =>{
     if(err) {
       throw err;
     }
-    console.log(result);
-    res.send("orders fetched");
+    fs.writeFile('../JSON/database_inv.json', JSON.stringify(result,null,2), err => {
+      if (err) {
+       console.log('Error writing file', err)
+     } else {
+       console.log('fetched database inventory');
+       }
+     })
+    res.send("inventory fetched from DB");
   });
 });
 
+//select logs file and update it
+app.get("/getlogs", (req, res) => {
+  req.headers["mode"] = "no-cors";
+  let sql = `SELECT * FROM fulfilled_orders`;
+  let query = db.query(sql, (err, result) =>{
+    if(err) {
+      throw err;
+    }
+    fs.writeFile('../JSON/logs.json', JSON.stringify(result,null,2), err => {
+      if (err) {
+       console.log('Error writing file', err)
+     } else {
+       console.log('fetched database inventory');
+       }
+     })
+     res.header("Access-Control-Allow-Origin", "*");
+    res.send("inventory fetched from DB");
+  });
+});
 
 //select single order
 app.get("/getorder/:id", (req, res) => {
@@ -103,7 +114,7 @@ let newTitle = "updated title";
 // use it before all route definitions
 app.use(cors({origin: '*'}));
 app.use(express.static("../JSON",{etag: false})); // exposes index.html, per below
-
+// get unfulfilled orders from shopify
 app.get("/getorders", async function(req,res){
   req.headers["mode"] = "no-cors";
   await require('./getUnfulfilledOrders').getOrders(sendResponse);
@@ -111,7 +122,7 @@ app.get("/getorders", async function(req,res){
     res.send("orders fetched");
   }
 });
-
+//get  inventory from the sheet
 app.get("/getdata", async function(req,res){
   req.headers["mode"] = "no-cors";
   await require('./getSheetData').getSheets(sendResponse);
@@ -119,6 +130,7 @@ app.get("/getdata", async function(req,res){
     res.send("orders fetched")
   }
 });
+//filter data based on inventory and fetched orders
 app.get("/filterdata", async function(req,res){
   req.headers["mode"] = "no-cors";
   await require('./newFiltering').filterMe(sendResponse);
@@ -126,22 +138,25 @@ app.get("/filterdata", async function(req,res){
     res.send("orders fetched")
   }
 });
-app.get("/markFulfilled", async function(req,res){
+
+//send to logs
+app.get("/markFulfilled",function(req,res){
   req.headers["mode"] = "no-cors";
-  await require('./fillLogs').fillLogs(
-    req.query.fulfillingDate ,
-    req.query.orderid,
-    req.query.totalPrice,
-    req.query.customer,
-    req.query.destination,
-    req.query.itemsSku,
-    req.query.description,
-    req.query.label,
-    sendResponse);
-  function sendResponse(){
-    res.send("marked fulfilled")
-  }
+
+    //insert data
+
+  let sql = `INSERT INTO fulfilled_orders (order_id, customer, country, items_sku, items_description, created_at, fulfilled_at,label)
+  VALUES ('${req.query.orderid}', '${req.query.customer}', '${req.query.destination}', '${req.query.itemsSku}', '${req.query.description}', '${req.query.fulfillingDate}', '2021-12-25', '${req.query.label}');`;
+  let query = db.query(sql, (err, result) =>{
+    if(err) {
+      throw err;
+    }
+    console.log(result);
+    res.send("order added");
+  });
 });
+
+//sendle request
 app.get('/updateData', async function(req,res){
   req.headers['mode'] = 'no-cors';
   await require('./testPrcel').setPostData(req.query.data, sendResponse);
@@ -155,12 +170,13 @@ app.get('/updateData', async function(req,res){
    })
   }
 });
+//google sheet fulfillment
 app.get("/fulfillSheets", async (req , res) =>{
   require('./setInventory').setSheets(JSON.parse(req.query.data));
   res.send("sheet updated");
 });
 
-
+// shopify fulfillment
 app.get("/fulfillShopify", async (req , res) =>{
   await require('./shopifyFulfillment').shopifyFulfillment(req.query.orderid , req.query.trackingUrl,req.query.trackingNo, sendResponse);
   function sendResponse(){

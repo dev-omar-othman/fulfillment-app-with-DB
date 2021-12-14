@@ -14,34 +14,35 @@
         Refresh
       </button>
     </div>
+     <div class="orders-counr">number of orders here :{{logs.length}}</div>
     <table class="table table-light">
       <thead>
         <tr>
+         
           <th scope="col">#ID</th>
           <th scope="col">Total Price</th>
           <th scope="col">Customer</th>
           <th scope="col">Destination</th>
+          <th scope="col">created at</th>
+          <th scope="col">fulfilled at</th>
           <th scope="col">Items SKU</th>
           <th scope="col">Description</th>
-          <th scope="col">Actions</th>
+          <th scope="col">label</th>
         </tr>
       </thead>
       <tbody>
-        <ordercomponent
-          v-for="order in outOfStock"
-          :key="order.orderId"
-          :id="order.orderId"
-          :total_price="order.orderTotalPrice"
+        <logscomponents
+          v-for="order in logs"
+          :key="order.order_id"
+          :id="order.order_id"
+          :total_price="order.total_price"
           :customer="order.customer"
-          :destination1="order.destination1"
-          :destination2="order.destination2"
-          :city="order.city"
-          :itemSku="order.itemsSku"
-          :zip ="order.postalCode"
-          :country ="order.countryCode"
-          :state ="order.state"
-          :description="order.orderDescription"
-          :orderNumber="order.orderNumber"
+          :itemSku="order.items_sku"
+          :country ="order.country"
+          :description="order.items_description"
+          :created_at="order.created_at"
+          :fulfilled_at="order.fulfilled_at"
+          :label="order.label"
         />
       </tbody>
     </table>
@@ -63,19 +64,34 @@
 </style>
 <script>
 const endpoint = "http://localhost:8081/";
-import ordercomponent from "../components/ordercomponent.vue";
+import logscomponents from "../components/logscomponents.vue";
 // @ is an alias to /src
 export default {
   data: function () {
     return {
-      outOfStock: [],
+      logs: [],
     };
-  },
-   async mounted() {
-    await fetch(endpoint + "ordersCantBeFulfilled.json")
-      .then((res) => res.json())
-      .then((data) => (this.outOfStock = data))
-      .catch((err) => console.log(err.message));  
+  },   created(){
+      var requestOptions = {
+        method: "GET",
+        redirect: "follow",
+        Headers:{
+          "mode": "no-cors"
+        }
+      };
+      fetch(endpoint + "getlogs", requestOptions)
+      .then((response) =>{
+        console.log(response);
+      })
+      .then((result) => {
+            console.log(result);
+            setTimeout(()=>{
+            fetch(endpoint + "logs.json")
+         .then((res) => res.json())
+          .then((data) => (this.logs = data))
+          .catch((err) => console.log(err.message));
+            },1500)
+          })
   },
   methods: {
     refreshData: function () {
@@ -89,7 +105,7 @@ export default {
     },
     
   },
-  components: { ordercomponent },
+  components: { logscomponents },
   name: "logs",
 };
 </script>
