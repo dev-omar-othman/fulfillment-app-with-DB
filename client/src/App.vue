@@ -13,8 +13,11 @@
       <li class="nav-item">
         <router-link to="/about"><button type="button" class="btn btn-light m-2 p-2">order can't be fulfilled</button></router-link>
       </li>
-            <li class="nav-item">
+      <li class="nav-item">
         <router-link to="/logs"><button type="button" class="btn btn-light m-2 p-2">fulfilled orders</button></router-link>
+      </li>
+      <li class="nav-item">
+        <router-link to="/inventory"><button type="button" class="btn btn-light m-2 p-2">inventory</button></router-link>
       </li>
     </ul>
   </div>
@@ -26,7 +29,6 @@
 
 <style lang="css">
 .nav-item:hover{
-  border-bottom:3px solid black;
   transform: scale(1.1);
 }
 #app{

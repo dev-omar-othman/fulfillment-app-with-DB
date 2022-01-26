@@ -154,17 +154,6 @@
               <button v-else type="button" class="btn btn-primary" disabled>
                 get label
               </button>
-              <button
-                v-if="this.itemSku.length == verifiedBarcodes.length"
-                type="button"
-                class="btn btn-primary"
-                @click="test"
-              >
-                test
-              </button>
-              <button v-else type="button" class="btn btn-primary" disabled>
-                test
-              </button>
             </div>
           </div>
         </div>
@@ -213,8 +202,11 @@ export default {
     return {
       date: new Date(),
       today: "",
+      order_id:this.id.replace('#', ''),
+      singletotalprice : this.total_price,
       barcode: null,
       tracking_url: null,
+      tracking_label:null,
       trackingNo: null,
       verifiedBarcodes: [],
       datasetting: {
@@ -395,25 +387,7 @@ export default {
         event.target.innerHTML = "order fulfilled";
         event.target.setAttribute("disabled", "true");
      },
-     test(){
-          Vue.axios
-            .get(endpoint + "markFulfilled", {
-              params: {
-                fulfillingDate : this.date.getFullYear() +
-                "-" +
-                (this.date.getMonth() + 1) +
-                "-" +
-                this.date.getDate(),
-                orderid: "235",
-                totalPrice : "$20",
-                customer : "omar",
-                destination : "US",
-                itemsSku : JSON.stringify(Array.from(new Set(['9120109770404', '9120109770879']))),
-                description : JSON.stringify(Array.from(new Set(['Butter Leather City Dog Leash - Chili Red L / Brass', 'Butter Leather Dog Collar - Chili Red L / Brass']))),
-                label : "HEEYYYYY URL",
-              },
-            });
-     },
+
     created(event) {
       // GET request using axios with error handling
       this.today =
@@ -433,6 +407,7 @@ export default {
           }else{
           this.tracking_url = response.data.body.url;
           this.trackingNo = response.data.body.trackingNo;
+          this.tracking_label = response.data.body.label;
           window.open(response.data.body.label, "_blank");
           event.target.innerHTML = "order fulfilled";
           event.target.setAttribute("disabled", "true");
@@ -451,13 +426,13 @@ export default {
                 (this.date.getMonth() + 1) +
                 "-" +
                 this.date.getDate(),
-                orderid: "2315",
-                totalPrice : "$20",
-                customer : "omar",
-                destination : "US",
-                itemsSku : JSON.stringify(Array.from(new Set(['9120109770404', '9120109770879']))),
-                description : JSON.stringify(Array.from(new Set(['Butter Leather City Dog Leash - Chili Red L / Brass', 'Butter Leather Dog Collar - Chili Red L / Brass']))),
-                label : "HEEYYYYY URL",
+                orderid: this.order_id,
+                totalPrice : this.singletotalprice,
+                customer : this.customer,
+                destination : this.country,
+                itemsSku : JSON.stringify(this.verifiedBarcodes),
+                description : JSON.stringify(this.description),
+                label : this.tracking_label,
               },
             });
           Vue.axios
@@ -478,7 +453,16 @@ export default {
         .get(endpoint + "fulfillSheets", {
           params: { data: JSON.stringify(this.verifiedBarcodes) },
         })
+        .then((response) => {console.log(response);
+        Vue.axios
+        .get(endpoint + "updatequantitydb", {
+          params: { data: JSON.stringify(this.verifiedBarcodes) },
+        })
         .then((response) => response)
+        .catch((error) => {
+          console.error("There was an error!", error);
+        });
+        })
         .catch((error) => {
           console.error("There was an error!", error);
         });

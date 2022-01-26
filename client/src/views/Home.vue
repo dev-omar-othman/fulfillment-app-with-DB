@@ -1,11 +1,16 @@
 <template>
-  <div class="container mt-5 p-1 home">
-    <div class="loading">
+  <div class="container-fluid mt-5 p-1 home">
+    <div v-if="loaded" class="loading" >
       <div class="spinner-border text-dark" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <div class="container d-flex justify-content-end">
+    <div v-else class="loading" style="display:block;">
+      <div class="spinner-border text-dark" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <div class="container-fluid d-flex justify-content-end">
       <button
         type="button"
         class="btn btn-primary m-1 refresh"
@@ -51,11 +56,10 @@
 </template>
 <style>
 .loading {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   position: fixed;
   background-color: #fff;
-  display: none;
   top: 0px;
   left: 0px;
 }
@@ -71,6 +75,7 @@ export default {
   data: function () {
     return {
       unfulfilledOrders: [],
+      loaded : false,
     };
   },
    created(){
@@ -99,19 +104,21 @@ export default {
             setTimeout(()=>{
               fetch(endpoint + "ordersToFulfill.json")
             .then((res) => res.json())
-            .then((data) => (this.unfulfilledOrders = data))
+            .then((data) => {this.unfulfilledOrders = data;
+            this.loaded = true;
+            })
             },1500)
             
           })
         })
+        
       })
       .catch((err)=> console.error(err));
 
   },
+
   methods: {
     refreshData: function () {
-      document.querySelector(".loading").style.display = "block";
-      
 
       setTimeout(function () {
         window.location.reload();

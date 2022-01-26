@@ -4,8 +4,8 @@
     <td>${{ total_price }}</td>
     <td>{{ customer }}</td>
     <td>{{ country }}</td>
-    <td>{{ created_at }}</td>
-    <td>{{ fulfilled_at }}</td>
+    <td>{{ created_at.slice(0,created_at.indexOf("T")) }}</td>
+    <td>{{ fulfilled_at.slice(0,fulfilled_at.indexOf("T")) }}</td>
     <td>
         <div v-for="(item, index) in JSON.parse(itemSku)" :key="index">{{ item }}</div>
     </td>

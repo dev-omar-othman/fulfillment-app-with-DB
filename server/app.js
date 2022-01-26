@@ -9,10 +9,11 @@ const app = express();
 var server = http.createServer(app);
 const {google} = require("googleapis");
 var db = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '',
-  database : 'fulfillment_app'
+  host     : 'fulfillmentapp.cmva2pijtmrz.us-east-2.rds.amazonaws.com',
+  user     : 'fulfillmentapp',
+  password : 'ms_app2022!',
+  database : 'sys',
+  port     : 3306
 });
 
 db.connect((err) => {
@@ -85,17 +86,42 @@ app.get("/getlogs", (req, res) => {
     res.send("inventory fetched from DB");
   });
 });
+//update inventory
 
+app.get("/updatequantitydb", (req, res) => {
+  req.headers["mode"] = "no-cors";
+  
+  for(var i = 0; i< JSON.parse(req.query.data).length ; i++){
+    console.log(req.query.data);
+      let sql_set = `UPDATE all_products
+      SET Quantity = Quantity - 1
+      WHERE Barcode = ${JSON.parse(req.query.data)[i]};`;
+      let query_set = db.query(sql_set, (err, result) =>{
+        if(err) {
+          throw err;
+        }
+  });
+}
+    res.header("Access-Control-Allow-Origin", "*");
+    res.send("inventory updated on DB");
+  });
 //select single order
-app.get("/getorder/:id", (req, res) => {
+app.get("/getinventory/:Product_Name", (req, res) => {
 
-  let sql = `SELECT * FROM orders WHERE id = ${req.params.id}`;
+  let sql = `SELECT * FROM all_products WHERE Product_Name = "${req.params.Product_Name}"`;
   let query = db.query(sql, (err, result) =>{
     if(err) {
       throw err;
     }
-    console.log(result);
-    res.send("order fetched");
+    fs.writeFile('../JSON/inventory.json', JSON.stringify(result,null,2), err => {
+      if (err) {
+       console.log('Error writing file', err)
+     } else {
+       console.log('fetched database inventory');
+       }
+     })
+     res.header("Access-Control-Allow-Origin", "*");
+    res.send("inventory fetched from DB");
   });
 });
 
@@ -146,7 +172,7 @@ app.get("/markFulfilled",function(req,res){
     //insert data
 
   let sql = `INSERT INTO fulfilled_orders (order_id, customer, country, items_sku, items_description, created_at, fulfilled_at,label)
-  VALUES ('${req.query.orderid}', '${req.query.customer}', '${req.query.destination}', '${req.query.itemsSku}', '${req.query.description}', '${req.query.fulfillingDate}', '2021-12-25', '${req.query.label}');`;
+  VALUES ('${req.query.orderid}', '${req.query.customer}', '${req.query.destination}', '${req.query.itemsSku}', '${req.query.description}', '${req.query.fulfillingDate}', CURRENT_TIMESTAMP, '${req.query.label}');`;
   let query = db.query(sql, (err, result) =>{
     if(err) {
       throw err;

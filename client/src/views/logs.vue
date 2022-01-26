@@ -1,11 +1,16 @@
 <template>
-  <div class="container mt-5 p-1 home">
-    <div class="loading">
+  <div class="container-fluid mt-5 p-1 home">
+   <div v-if="loaded" class="loading" >
       <div class="spinner-border text-dark" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <div class="container d-flex justify-content-end">
+    <div v-else class="loading" style="display:block;">
+      <div class="spinner-border text-dark" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <div class="container-fluid d-flex justify-content-end">
       <button
         type="button"
         class="btn btn-primary m-1 refresh"
@@ -70,6 +75,7 @@ export default {
   data: function () {
     return {
       logs: [],
+      loaded:false
     };
   },   created(){
       var requestOptions = {
@@ -88,7 +94,8 @@ export default {
             setTimeout(()=>{
             fetch(endpoint + "logs.json")
          .then((res) => res.json())
-          .then((data) => (this.logs = data))
+          .then((data) => {this.logs = data;
+          this.loaded = true})
           .catch((err) => console.log(err.message));
             },1500)
           })
