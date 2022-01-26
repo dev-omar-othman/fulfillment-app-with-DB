@@ -6,7 +6,7 @@ let  finalOrders = []
 var options = {
   'method': 'GET',
   'hostname': 'mollyandstitchus.myshopify.com',
-  'path': '/admin/api/2021-07/orders.json?fulfillment_status=unshipped',
+  'path': '/admin/api/2021-07/orders.json?fulfillment_status=unshipped&limit=250&gift_card=false',
   'headers': {
     'Authorization': 'Basic OTJjOWE3NDdmMjZmODgzNjM4OGM4NDFhMDYzZjMwZDI6c2hwcGFfNDg4NDNmNTNjNDYyZmI5OGRiY2U2ZjI2NDBlNzE2MjY='
   },
@@ -41,7 +41,7 @@ var req = https.request(options, function (res) {
             itemsSku:[],
             itemsQuantity:[],
             orderDescription:[],
-            orderDate : new Date (orders.orders[i].updated_at),
+            orderDate : new Date (orders.orders[i].created_at),
             
         }
         for(var j = 0; orders.orders[i].line_items.length > j ; j++){
